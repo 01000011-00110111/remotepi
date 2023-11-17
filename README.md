@@ -15,5 +15,3 @@ Our vision for RemotePi includes the following features:
 - **User-Friendly UI:** Provide an easy-to-use interface with customization options. An advanced version will also be available for users with a more technical inclination.
 
 - **Simplified Setup:** Ensure a straightforward setup process accompanied by comprehensive documentation to guide users through every step.
-
-Feel free to expand or customize this README based on your project's evolving features and goals.
