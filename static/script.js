@@ -15,23 +15,24 @@ document.addEventListener('DOMContentLoaded', function () {
         term.write('\r\n$ ');
     };
 
-    var curr_line = '';
+    let curr_line = '';
     // Listen for user input
     term.onKey(e => {
         const key = e.domEvent.key;
-        const letter = e.domEvent.key[0];
+        // const letter = e.domEvent.key[0];
 
         // console.log(key.charCodeAt(0))
         if (key === 'Enter') {// Enter key pressed, log curr_line, send to server and reset
             socket.emit('command', curr_line);
             curr_line = '';
         } else if (key === 'Backspace') {// delete when backspace is pressed
-            if (term.x > 2) {
+            console.log('pressed ' + curr_line.length)
+            if (curr_line.length > 0) {
                 curr_line = curr_line.slice(0, -1);
                 term.write('\b \b');
             }
         } else {// display the current letters
-            curr_line += letter;
+            curr_line += key;
             term.write(key);
         }
     });
