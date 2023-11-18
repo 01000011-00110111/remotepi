@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+    <script src="/static/script.js"></script>
     <title>Command Execution</title>
 </head>
-<body style="background-color='#000000'">
+<body style="background-color:black; color:white;">
     <h1>Command Execution</h1>
-    <form action="/execute" method="post">
         <label for="command">Enter Command:</label>
         <input type="text" id="command" name="command" required>
-        <button type="submit">Execute</button>
-    </form>
-    {% if result %}
-    <div>
-        <h2>Result:</h2>
-        <pre>{{ result }}</pre>
-    </div>
-    {% endif %}
+        <button onclick="sendCommand();">Execute</button>
+    <pre id="result">
+
+    </pre>
 </body>
 </html>
