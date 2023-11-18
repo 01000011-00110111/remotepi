@@ -8,7 +8,7 @@ This project is currently in early release, and as such, it may not be the most 
 
 ## Plans
 
-Our vision for RemotePi includes the following features:
+My vision for RemotePi includes the following features:
 
 - **Secure Web Access:** Facilitate a secure way to access your Raspberry Pi online.
   
