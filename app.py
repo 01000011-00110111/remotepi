@@ -1,42 +1,64 @@
-import fcntl
-import os
-import select
-import subprocess
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+from ptyprocess import PtyProcess
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-p = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+# Initialize a global PtyProcess instance
+pty_proc = None
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@socketio.on('command')
-def execute_command(command):
-    result = execute(command)
-    socketio.emit('result', result)
+def create_terminal():
+    global pty_proc
+    pty_proc = PtyProcess.spawn(['/bin/bash'], dimensions=(80, 24))
 
-def execute(command):
+def execute_command(command):
+    global pty_proc
+    pty_proc.write(command)
+    output = pty_proc.read().decode('utf-8')
+    output.split()
+    print(output)
+    return output
+
+@socketio.on('input')
+def handle_input(data):
+    global pty_proc
+
+    if pty_proc is None:
+        create_terminal()
+
     try:
-        p.stdin.write(command + '\n')
-        p.stdin.flush()
-        result = terminal_out()
-        return result
-    except subprocess.CalledProcessError as e:
-        return f"Error: {e.output}"
+        output = execute_command(data)
+        emit('output', {'output': output, 'prompt': get_prompt()})
+    except Exception as e:
+        emit('output', {'output': f"Error: {str(e)}", 'prompt': get_prompt()})
+
+
+
+def get_prompt():
+    global pty_proc
+    if pty_proc is None:
+        return "$ "  # Default prompt if terminal not created yet
+
+    pty_proc.write(b'\n')
     
-def terminal_out():
+    prompt_bytes = b''
     while True:
-        rlist, _, _ = select.select([p.stdout, p.stderr], [], [], 0.1)
-        if not rlist:
+        char = pty_proc.read(1)
+        prompt_bytes += char
+        if char == b'\n':
             break
-            
-        for stream in rlist:
-            output = os.read(stream.fileno(), 4096).decode('utf-8')
-        return [line.rstrip() for line in output.split('\n') if line.rstrip()]
+
+    return prompt_bytes.decode('utf-8').strip()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    try:
+        socketio.run(app, debug=True)
+    finally:
+        # Close the PtyProcess when the application is stopped
+        if pty_proc is not None:
+            pty_proc.terminate(force=True)
